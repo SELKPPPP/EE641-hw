@@ -1,2 +1,3 @@
 # EE641-hw
-EE641 homework
+Wanshi Cao 
+wanshica@usc.edu
