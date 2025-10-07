@@ -7,6 +7,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import copy
 from collections import defaultdict
+from training_dynamics import analyze_mode_coverage, save_grid
+import matplotlib.pyplot as plt
 
 def train_gan_with_fix(generator, discriminator, data_loader, 
                        num_epochs=100, fix_type='feature_matching'):
@@ -117,12 +119,12 @@ def train_gan_with_fix(generator, discriminator, data_loader,
                 out = torch.stack(out)
                 return torch.cat([x, out], dim=1)
             
-        discriminator.mb = MinibatchDiscrimination(in_features=256 * 3 * 3, out_features=100, kernel_dims=5)
+        discriminator.mb = MinibatchDiscrimination(in_features=256 * 3 * 3, out_features=100, kernel_dims=5).to(next(discriminator.parameters()).device)
         feature_dim = 256 * 3 * 3 + 100  # Adjust based on your architecture and minibatch layer
         discriminator.classifier = nn.Sequential(
             nn.Linear(feature_dim + (26 if discriminator.conditional else 0), 1),
             nn.Sigmoid()
-        )
+        ).to(next(discriminator.parameters()).device)
 
         def forward_mb(self, img, class_label=None):
             x = self.features(img)
@@ -155,17 +157,29 @@ def train_gan_with_fix(generator, discriminator, data_loader,
         for batch_idx, (real_images, labels) in enumerate(data_loader):
             batch_size = real_images.size(0)
             real_images = real_images.to(device)
+            labels = labels.to(device)
+            is_cond = getattr(generator, "conditional", False)
             real_labels = torch.ones(batch_size, 1).to(device)
             fake_labels = torch.zeros(batch_size, 1).to(device)
             
             # Train Discriminator
             d_optimizer.zero_grad()
-            outputs_real = discriminator(real_images, labels)
+            if is_cond:
+                y_onehot = nn.functional.one_hot(labels, num_classes=26).float().to(device)
+                outputs_real = discriminator(real_images, y_onehot)
+            else:   
+                outputs_real = discriminator(real_images)
             d_loss_real = criterion(outputs_real, real_labels)
             
             z = torch.randn(batch_size, 100).to(device)  # Assuming latent dim is 100
-            fake_images = generator(z, labels)
-            outputs_fake = discriminator(fake_images.detach(), labels)
+            if is_cond:
+                y_onehot = nn.functional.one_hot(labels, num_classes=26).float().to(device)
+                fake_images = generator(z, y_onehot)
+                outputs_fake = discriminator(fake_images.detach(), y_onehot)
+            else:
+                fake_images = generator(z)
+                outputs_fake = discriminator(fake_images.detach())       
+    
             d_loss_fake = criterion(outputs_fake, fake_labels)
             
             d_loss = d_loss_real + d_loss_fake
@@ -175,8 +189,8 @@ def train_gan_with_fix(generator, discriminator, data_loader,
             # Train Generator
             g_optimizer.zero_grad()
             z = torch.randn(batch_size, 100).to(device)
-            fake_images = generator(z, labels)
-            outputs = discriminator(fake_images, labels)
+            fake_images = generator(z, y_onehot) if is_cond else generator(z)
+            outputs = discriminator(fake_images, y_onehot) if is_cond else discriminator(fake_images)
             
             if fix_type == 'feature_matching':
                 g_loss = feature_matching_loss(real_images, fake_images, discriminator)
@@ -197,5 +211,13 @@ def train_gan_with_fix(generator, discriminator, data_loader,
                 history['epoch'].append(epoch + batch_idx/len(data_loader))
         
         print(f"Epoch [{epoch+1}/{num_epochs}] D Loss: {d_loss.item():.4f} G Loss: {g_loss.item():.4f}")
+
+
+        if epoch % 10 == 0:
+            mode_coverage = analyze_mode_coverage(generator, device)
+            history['model_epochs'].append(epoch)
+            history['mode_coverage'].append(mode_coverage)
+            save_grid(generator, device, save_path=f"results/samples/grid_epoch_{epoch+1:03d}.png")
+            print(f"Epoch {epoch}: Mode coverage = {mode_coverage:.2f}")
 
     return history    

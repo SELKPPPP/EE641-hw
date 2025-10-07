@@ -54,6 +54,32 @@ class HierarchicalDrumVAE(nn.Module):
         # TODO: Implement decoder architecture
         # Mirror the encoder structure
         # Use transposed convolutions for upsampling
+        self.decoder_high = nn.Sequential(
+            nn.Linear(z_high_dim, 32), 
+            nn.ReLU(),
+            nn.Linear(32, 64),
+            nn.ReLU()
+        )
+
+        self.fc_mu_prior = nn.Linear(64, z_low_dim)
+        self.fc_logvar_prior = nn.Linear(64, z_low_dim)
+
+    
+
+        self.decoder_low = nn.Sequential(
+            nn.Linear(z_low_dim, 512),
+            nn.ReLU(),
+            nn.Unflatten(1, (128, 4)),  # → [batch, 128, 4]
+            nn.ConvTranspose1d(128, 64, kernel_size=4, stride=2, padding=1),  # → [8, 64]
+            nn.ReLU(),
+            nn.ConvTranspose1d(64, 32, kernel_size=4, stride=2, padding=1),  # → [16, 32]
+            nn.ReLU(),
+            nn.Conv1d(32, 9, kernel_size=3, padding=1)  # → [16, 9]
+
+        
+)   
+
+
         
     def encode_hierarchy(self, x):
         """
@@ -72,7 +98,15 @@ class HierarchicalDrumVAE(nn.Module):
         # TODO: Encode to z_low parameters
         # TODO: Sample z_low using reparameterization
         # TODO: Encode z_low to z_high parameters
-        pass
+        h_low = self.encoder_low(x)  # [batch, 512]
+        mu_low = self.fc_mu_low(h_low)  # [batch, z_low_dim]
+        logvar_low = self.fc_logvar_low(h_low)  # [batch, z_low_dim]
+        z_low = self.reparameterize(mu_low, logvar_low)  # [batch, z_low_dim]
+
+        h_high = self.encoder_high(z_low)  # [batch, 32]
+        mu_high = self.fc_mu_high(h_high)  # [batch, z_high_dim]
+        logvar_high = self.fc_logvar_high(h_high)  # [batch, z_high_dim]
+        return mu_low, logvar_low, mu_high, logvar_high
     
     def reparameterize(self, mu, logvar):
         """
@@ -81,7 +115,9 @@ class HierarchicalDrumVAE(nn.Module):
         TODO: Implement
         z = mu + eps * std where eps ~ N(0,1)
         """
-        pass
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+        return mu + eps * std
     
     def decode_hierarchy(self, z_high, z_low=None, temperature=1.0):
         """
@@ -98,7 +134,15 @@ class HierarchicalDrumVAE(nn.Module):
         # TODO: If z_low is None, sample from conditional prior p(z_low|z_high)
         # TODO: Decode z_high and z_low to pattern logits
         # TODO: Apply temperature scaling before sigmoid
-        pass
+        if z_low is None:
+            h_prior = self.decoder_high(z_high)  # [batch,64]
+            mu_prior = self.fc_mu_prior(h_prior)  # [batch, z_low_dim]
+            logvar_prior = self.fc_logvar_prior(h_prior)  # [batch, z_low_dim]
+            z_low = self.reparameterize(mu_prior, logvar_prior)  # [batch, z_low_dim]
+        h_dec = self.decoder_low(z_low)  # [batch, 9, 16]
+        pattern_logits = h_dec.transpose(1, 2)  # [batch, 16, 9]
+        pattern_logits = pattern_logits / temperature
+        return pattern_logits
     
     def forward(self, x, beta=1.0):
         """
@@ -113,4 +157,10 @@ class HierarchicalDrumVAE(nn.Module):
             mu_low, logvar_low, mu_high, logvar_high: Latent parameters
         """
         # TODO: Encode, decode, compute losses
-        pass
+        mu_low, logvar_low, mu_high, logvar_high = self.encode_hierarchy(x)
+        z_low = self.reparameterize(mu_low, logvar_low)
+        z_high = self.reparameterize(mu_high, logvar_high)
+        recon_logits = self.decode_hierarchy(z_high, z_low)
+        #recon = torch.sigmoid(recon_logits)
+
+        return recon_logits, mu_low, logvar_low, mu_high, logvar_high

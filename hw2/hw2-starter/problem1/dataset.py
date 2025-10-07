@@ -58,7 +58,7 @@ class FontDataset(Dataset):
         # 4. Normalize to [0, 1]
         # 5. Convert to tensor
         
-        image_path = os.path.join(self.data_dir, sample['path'])
+        image_path = os.path.join(self.data_dir, self.split, sample['filename'])
         image = Image.open(image_path).convert('L')  # Ensure grayscale
         image = image.resize((28, 28), Image.LANCZOS)
         

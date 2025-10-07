@@ -6,5 +6,6 @@ Structure:
 - `provided/` - Utility functions (metrics, visualization)
 - `problem1/` - GAN skeleton code
 - `problem2/` - VAE skeleton code
-
+- Wanshi Cao
+- wanshica@usc.edu
 See assignment page for full instructions.

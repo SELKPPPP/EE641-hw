@@ -4,7 +4,26 @@ GAN models for font generation.
 
 import torch
 import torch.nn as nn
+class ConditionalBatchNorm2d(nn.Module):
+    def __init__(self, num_features, num_classes):
+        super().__init__()
+        self.num_features = num_features
+        self.num_classes = num_classes
+        self.bn = nn.BatchNorm2d(num_features, affine=False)
+        self.embedded = nn.Embedding(num_classes, num_features * 2)
+        self.gamma_embed = nn.Linear(num_features * 2, num_features)
+        self.beta_embed = nn.Linear(num_features * 2, num_features)
 
+    def forward(self, x, y):
+        if y.dim() == 2:
+            y = y.argmax(dim=1)
+        y = y.long()     
+        out = self.bn(x)
+        embed = self.embedded(y)
+        gamma = self.gamma_embed(embed).unsqueeze(2).unsqueeze(3)
+        beta = self.beta_embed(embed).unsqueeze(2).unsqueeze(3)
+        out = gamma * out + beta
+        return out
 
 class Generator(nn.Module):
     def __init__(self, z_dim=100, conditional=False, num_classes=26):
@@ -19,6 +38,11 @@ class Generator(nn.Module):
         super().__init__()
         self.z_dim = z_dim
         self.conditional = conditional
+        self.fc = nn.Linear(z_dim + (num_classes if conditional else 0), 128 * 7 * 7)
+        self.num_classes = num_classes
+        self.deconv1 = nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding=1)
+        self.cbn1 = ConditionalBatchNorm2d(64, num_classes) if conditional else nn.BatchNorm2d(64)
+        self.deconv2 = nn.ConvTranspose2d(64, 1, kernel_size=4, stride=2, padding=1)
         
         # Calculate input dimension
         input_dim = z_dim + (num_classes if conditional else 0)
@@ -60,14 +84,14 @@ class Generator(nn.Module):
         # If conditional, concatenate z and class_label
         # Project to spatial dimensions
         # Apply upsampling network
-        if self.conditional and class_label is not None:
-            z = torch.cat([z, class_label], dim=1)
-
-
-        x = self.project(z)
+        x = self.fc(torch.cat([z, class_label], dim=1) if self.conditional and class_label is not None else z)
         x = x.view(-1, 128, 7, 7)  # Reshape to [batch_size, 128, 7, 7]
-        img = self.main(x)
-        return img
+        x = self.cbn1(self.deconv1(x), class_label) if self.conditional and class_label is not None else nn.ReLU(True)(self.deconv1(x))
+        x = torch.relu(x)
+        x = self.deconv2(x)
+        x = torch.tanh(x)
+        return x
+    
 
 class Discriminator(nn.Module):
     def __init__(self, conditional=False, num_classes=26):

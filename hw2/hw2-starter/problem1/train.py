@@ -12,8 +12,10 @@ from pathlib import Path
 
 from dataset import FontDataset
 from models import Generator, Discriminator
-from training_dynamics import train_gan, analyze_mode_coverage
+from training_dynamics import train_gan, analyze_mode_coverage, visualize_mode_collapse
 from fixes import train_gan_with_fix
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 def main():
     """
@@ -29,7 +31,7 @@ def main():
         'data_dir': 'data/fonts',
         'checkpoint_dir': 'checkpoints',
         'results_dir': 'results',
-        'experiment': 'vanilla',  # 'vanilla' or 'fixed'
+        'experiment': 'fixed',  # 'vanilla' or 'fixed'
         'fix_type': 'feature_matching'  # Used if experiment='fixed'
     }
     
@@ -47,8 +49,8 @@ def main():
     )
     
     # Initialize models
-    generator = Generator(z_dim=config['z_dim']).to(config['device'])
-    discriminator = Discriminator().to(config['device'])
+    generator = Generator(z_dim=config['z_dim'],conditional=True).to(config['device'])
+    discriminator = Discriminator(conditional=True).to(config['device'])
     
     # Train model
     if config['experiment'] == 'vanilla':
@@ -82,6 +84,9 @@ def main():
         'config': config,
         'final_epoch': config['num_epochs']
     }, f"{config['results_dir']}/best_generator.pth")
+
+    # visualize mode collapse progression
+    visualize_mode_collapse(history, 'fm_fix.png') 
     
     print(f"Training complete. Results saved to {config['results_dir']}/")
 
