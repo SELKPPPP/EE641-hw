@@ -1,0 +1,146 @@
+{
+  "encoder_layer_0_head_0": {
+    "avg_attention_to_operator": 0.13938544690608978,
+    "avg_attention_to_same_position": 0.8451057076454163,
+    "avg_attention_to_carry_positions": 7.705974894633982e-06,
+    "entropy": 0.06389863789081573
+  },
+  "encoder_layer_0_head_1": {
+    "avg_attention_to_operator": 0.11234743148088455,
+    "avg_attention_to_same_position": 0.11504854261875153,
+    "avg_attention_to_carry_positions": 0.041800543665885925,
+    "entropy": 0.40243539214134216
+  },
+  "encoder_layer_0_head_2": {
+    "avg_attention_to_operator": 0.07632719725370407,
+    "avg_attention_to_same_position": 0.12096390128135681,
+    "avg_attention_to_carry_positions": 0.04148781672120094,
+    "entropy": 0.5536248087882996
+  },
+  "encoder_layer_0_head_3": {
+    "avg_attention_to_operator": 0.14007022976875305,
+    "avg_attention_to_same_position": 0.038822781294584274,
+    "avg_attention_to_carry_positions": 0.1347697377204895,
+    "entropy": 0.5227311849594116
+  },
+  "encoder_layer_1_head_0": {
+    "avg_attention_to_operator": 0.11294468492269516,
+    "avg_attention_to_same_position": 0.6382163763046265,
+    "avg_attention_to_carry_positions": 3.500603042994044e-07,
+    "entropy": 0.160724937915802
+  },
+  "encoder_layer_1_head_1": {
+    "avg_attention_to_operator": 0.42861300706863403,
+    "avg_attention_to_same_position": 1.218294073623838e-06,
+    "avg_attention_to_carry_positions": 2.541460097926773e-12,
+    "entropy": 0.00026705063646659255
+  },
+  "encoder_layer_1_head_2": {
+    "avg_attention_to_operator": 0.1104881688952446,
+    "avg_attention_to_same_position": 0.14784014225006104,
+    "avg_attention_to_carry_positions": 7.696876127738506e-05,
+    "entropy": 0.384890079498291
+  },
+  "encoder_layer_1_head_3": {
+    "avg_attention_to_operator": 0.10597755759954453,
+    "avg_attention_to_same_position": 0.65482097864151,
+    "avg_attention_to_carry_positions": 2.4836301236064173e-05,
+    "entropy": 0.1872173398733139
+  },
+  "decoder_self_layer_0_head_0": {
+    "avg_attention_to_operator": 0.3772042393684387,
+    "avg_attention_to_same_position": 0.9292718768119812,
+    "avg_attention_to_carry_positions": 0.010000068694353104,
+    "entropy": 0.002668196801096201
+  },
+  "decoder_self_layer_0_head_1": {
+    "avg_attention_to_operator": 0.35831841826438904,
+    "avg_attention_to_same_position": 0.8165975213050842,
+    "avg_attention_to_carry_positions": 0.04738330841064453,
+    "entropy": 0.003089320147410035
+  },
+  "decoder_self_layer_0_head_2": {
+    "avg_attention_to_operator": 0.41123390197753906,
+    "avg_attention_to_same_position": 0.8320139646530151,
+    "avg_attention_to_carry_positions": 0.02499670535326004,
+    "entropy": 0.007932459004223347
+  },
+  "decoder_self_layer_0_head_3": {
+    "avg_attention_to_operator": 0.37650054693222046,
+    "avg_attention_to_same_position": 0.8198688626289368,
+    "avg_attention_to_carry_positions": 0.04505728557705879,
+    "entropy": 0.0013750174548476934
+  },
+  "decoder_self_layer_1_head_0": {
+    "avg_attention_to_operator": 0.6599361300468445,
+    "avg_attention_to_same_position": 0.6666039228439331,
+    "avg_attention_to_carry_positions": 0.0,
+    "entropy": 0.00032224025926552713
+  },
+  "decoder_self_layer_1_head_1": {
+    "avg_attention_to_operator": 0.3333333432674408,
+    "avg_attention_to_same_position": 1.0,
+    "avg_attention_to_carry_positions": 1.401298464324817e-45,
+    "entropy": 2.1893349548371842e-20
+  },
+  "decoder_self_layer_1_head_2": {
+    "avg_attention_to_operator": 0.40536195039749146,
+    "avg_attention_to_same_position": 0.9279714226722717,
+    "avg_attention_to_carry_positions": 2.4306873708991623e-26,
+    "entropy": 0.002503175288438797
+  },
+  "decoder_self_layer_1_head_3": {
+    "avg_attention_to_operator": 0.6633333563804626,
+    "avg_attention_to_same_position": 0.6700000166893005,
+    "avg_attention_to_carry_positions": 4.5384922938390756e-32,
+    "entropy": 1.1821489967478449e-11
+  },
+  "decoder_cross_layer_0_head_0": {
+    "avg_attention_to_operator": 0.10931514948606491,
+    "avg_attention_to_same_position": 0.2081373631954193,
+    "avg_attention_to_carry_positions": 0.25604134798049927,
+    "entropy": 0.15962527692317963
+  },
+  "decoder_cross_layer_0_head_1": {
+    "avg_attention_to_operator": 0.13888408243656158,
+    "avg_attention_to_same_position": 0.2761654257774353,
+    "avg_attention_to_carry_positions": 0.047035884112119675,
+    "entropy": 0.11434145271778107
+  },
+  "decoder_cross_layer_0_head_2": {
+    "avg_attention_to_operator": 0.10013222694396973,
+    "avg_attention_to_same_position": 0.033745720982551575,
+    "avg_attention_to_carry_positions": 0.16377800703048706,
+    "entropy": 0.3615850508213043
+  },
+  "decoder_cross_layer_0_head_3": {
+    "avg_attention_to_operator": 0.04255976900458336,
+    "avg_attention_to_same_position": 0.19460073113441467,
+    "avg_attention_to_carry_positions": 0.17275680601596832,
+    "entropy": 0.2905222177505493
+  },
+  "decoder_cross_layer_1_head_0": {
+    "avg_attention_to_operator": 0.07942845672369003,
+    "avg_attention_to_same_position": 0.4334528148174286,
+    "avg_attention_to_carry_positions": 0.006334701087325811,
+    "entropy": 0.7470597624778748
+  },
+  "decoder_cross_layer_1_head_1": {
+    "avg_attention_to_operator": 0.052717290818691254,
+    "avg_attention_to_same_position": 0.614847719669342,
+    "avg_attention_to_carry_positions": 2.2800267629463633e-07,
+    "entropy": 0.5658771991729736
+  },
+  "decoder_cross_layer_1_head_2": {
+    "avg_attention_to_operator": 0.0404675230383873,
+    "avg_attention_to_same_position": 0.5457050204277039,
+    "avg_attention_to_carry_positions": 1.8867429218971665e-07,
+    "entropy": 0.5219534039497375
+  },
+  "decoder_cross_layer_1_head_3": {
+    "avg_attention_to_operator": 0.030191389843821526,
+    "avg_attention_to_same_position": 0.5691772699356079,
+    "avg_attention_to_carry_positions": 2.407000749826693e-07,
+    "entropy": 0.4514061510562897
+  }
+}
