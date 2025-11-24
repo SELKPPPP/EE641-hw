@@ -1,0 +1,7 @@
+{
+    "vi_iterations": 31,
+    "qi_iterations": 23,
+    "policies_match": true,
+    "policy_match_percent": 100.0,
+    "max_value_difference": 5.5739990771463965e-05
+}
