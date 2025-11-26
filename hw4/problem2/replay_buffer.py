@@ -52,9 +52,11 @@ class ReplayBuffer:
             done: Whether episode terminated
         """
         # TODO: Create transition tuple
+        transiton = (state_A, state_B, action_A, action_B,
+                     comm_A, comm_B, reward,
+                     next_state_A, next_state_B, done)
         # TODO: Add to buffer (automatic removal of oldest if at capacity)
-
-        raise NotImplementedError
+        self.buffer.append(transiton)
 
     def sample(self, batch_size: int) -> Tuple:
         """
@@ -67,11 +69,20 @@ class ReplayBuffer:
             Batch of transitions as separate arrays for each component
         """
         # TODO: Sample batch_size transitions randomly
+        batach = random.sample(self.buffer, batch_size)
         # TODO: Separate components into individual arrays
         # TODO: Convert to appropriate numpy arrays
+        state_A, state_B, action_A, action_B, \
+        comm_A, comm_B, reward, \
+        next_state_A, next_state_B, done = zip(*batach)
         # TODO: Return tuple of arrays
 
-        raise NotImplementedError
+        return (np.array(state_A), np.array(state_B),
+                np.array(action_A),  np.array(action_B),
+                np.array(comm_A), np.array(comm_B),
+                np.array(reward),
+                np.array(next_state_A), np.array(next_state_B),
+                np.array(done))
 
     def __len__(self) -> int:
         """
@@ -111,10 +122,15 @@ class PrioritizedReplayBuffer:
         self.frame = 1
 
         # TODO: Initialize data storage
+        self.buffer = []
+        self.pos = 0
         # TODO: Initialize priority tree (sum-tree or similar)
+        self.priorities = np.zeros((capacity,), dtype=np.float32)
         # TODO: Set random seed if provided
+        if seed is not None:
+            random.seed(seed)
+            np.random.seed(seed)
 
-        raise NotImplementedError
 
     def push(self, *args, **kwargs) -> None:
         """
@@ -123,9 +139,28 @@ class PrioritizedReplayBuffer:
         New transitions get maximum priority to ensure they're sampled at least once.
         """
         # TODO: Store transition
+        if len(args) == 10:
+            transition = args
+        elif len(kwargs) == 10:
+            transition = (kwargs['state_A'], kwargs['state_B'],
+                          kwargs['action_A'], kwargs['action_B'],
+                          kwargs['comm_A'], kwargs['comm_B'],
+                          kwargs['reward'],
+                          kwargs['next_state_A'], kwargs['next_state_B'],
+                          kwargs['done'])
+            
+        max_priority = self.priorities.max() if self.buffer else 1.0
+
+        if len(self.buffer) < self.capacity:
+            self.buffer.append(transition)
+        else:
+            self.buffer[self.pos] = transition
+            
+
         # TODO: Assign maximum priority to new transition
 
-        raise NotImplementedError
+        self.priorities[self.pos] = max_priority
+        self.pos = (self.pos + 1) % self.capacity
 
     def sample(self, batch_size: int) -> Tuple:
         """
@@ -136,12 +171,34 @@ class PrioritizedReplayBuffer:
             weights: Importance sampling weights
             indices: Indices for updating priorities
         """
+        N = len(self.buffer)
+        if N == 0:
+            return None, None, None
         # TODO: Update beta based on schedule
+        self.beta = min(1.0, self.beta_start + self.frame * (1.0 - self.beta_start) / self.beta_steps)
+        self.frame += 1
         # TODO: Sample transitions based on priorities
+        priorities = self.priorities[:N]
+        probas = priorities ** self.alpha
+        probas /= probas.sum()
+        indices = np.random.choice(N, batch_size, p=probas)
+        samples = [self.buffer[idx] for idx in indices]
         # TODO: Calculate importance sampling weights
+        weights = (N * probas[indices]) ** (-self.beta)
+        weights /= weights.max()
+        weights = np.array(weights, dtype=np.float32)
         # TODO: Return transitions, weights, and indices
+        state_A, state_B, action_A, action_B, \
+        comm_A, comm_B, reward, \
+        next_state_A, next_state_B, done = zip(*samples)
+        transitions = (np.array(state_A), np.array(state_B),
+                       np.array(action_A),  np.array(action_B),
+                       np.array(comm_A), np.array(comm_B),
+                       np.array(reward),
+                       np.array(next_state_A), np.array(next_state_B),
+                       np.array(done))
 
-        raise NotImplementedError
+        return transitions, weights, indices
 
     def update_priorities(self, indices: List[int], priorities: np.ndarray) -> None:
         """
@@ -153,5 +210,14 @@ class PrioritizedReplayBuffer:
         """
         # TODO: Update priorities for given indices
         # TODO: Apply alpha exponent for prioritization
+        for idx, priority in zip(indices, priorities):
+            self.priorities[idx] = priority ** self.alpha
 
-        raise NotImplementedError
+    def __len__(self) -> int:
+        """
+        Get current size of buffer.
+
+        Returns:
+            Number of transitions in buffer
+        """
+        return len(self.buffer)

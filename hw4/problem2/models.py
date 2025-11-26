@@ -15,12 +15,12 @@ class AgentDQN(nn.Module):
     Network processes observations and outputs both Q-values and communication signal.
     """
 
-    def __init__(self, input_dim: int = 10, hidden_dim: int = 64, num_actions: int = 5):
+    def __init__(self, input_dim: int = 11, hidden_dim: int = 64, num_actions: int = 5):
         """
         Initialize DQN with dual outputs.
 
         Args:
-            input_dim: Dimension of input observation (default 10)
+            input_dim: Dimension of input observation (default 11)
             hidden_dim: Number of hidden units
             num_actions: Number of discrete actions (default 5)
         """
@@ -31,8 +31,11 @@ class AgentDQN(nn.Module):
         #       - Hidden layers (at least one more)
         #       - Action head: outputs Q-values for each action
         #       - Communication head: outputs single scalar
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.action_head = nn.Linear(hidden_dim, num_actions)
+        self.comm_head = nn.Linear(hidden_dim, 1)
 
-        raise NotImplementedError
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
@@ -50,8 +53,11 @@ class AgentDQN(nn.Module):
         # TODO: Compute communication signal through comm head
         # TODO: Apply sigmoid to bound communication in [0,1]
         # TODO: Return (action_values, comm_signal)
-
-        raise NotImplementedError
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        action_values = self.action_head(x)
+        comm_signal = torch.sigmoid(self.comm_head(x))
+        return action_values, comm_signal       
 
 
 class DuelingDQN(nn.Module):
@@ -61,7 +67,7 @@ class DuelingDQN(nn.Module):
     Separates value and advantage streams for better learning.
     """
 
-    def __init__(self, input_dim: int = 10, hidden_dim: int = 64, num_actions: int = 5):
+    def __init__(self, input_dim: int = 11, hidden_dim: int = 64, num_actions: int = 5):
         """
         Initialize Dueling DQN.
 
@@ -76,8 +82,12 @@ class DuelingDQN(nn.Module):
         # TODO: Define value stream (outputs single value)
         # TODO: Define advantage stream (outputs advantages for each action)
         # TODO: Define communication head
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, hidden_dim)
+        self.value_head = nn.Linear(hidden_dim, 1)
+        self.advantage_head = nn.Linear(hidden_dim, num_actions)
+        self.comm_head = nn.Linear(hidden_dim, 1)
 
-        raise NotImplementedError
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """
@@ -91,11 +101,17 @@ class DuelingDQN(nn.Module):
             comm_signal: Communication signal in [0,1] [batch_size, 1]
         """
         # TODO: Compute shared features
+        x = F.relu(self.fc1(x))
+        features = F.relu(self.fc2(x
+        ))
         # TODO: Compute state value V(s)
+        value = self.value_head(features)
         # TODO: Compute advantages A(s,a)
+        advantages = self.advantage_head(features)
         # TODO: Combine: Q(s,a) = V(s) + (A(s,a) - mean(A(s,a)))
+        q_values = value + (advantages - advantages.mean(dim=1, keepdim=True))
         # TODO: Compute communication signal
         # TODO: Apply sigmoid to bound communication in [0,1]
+        comm_signal = torch.sigmoid(self.comm_head(features))
         # TODO: Return (q_values, comm_signal)
-
-        raise NotImplementedError
+        return q_values, comm_signal

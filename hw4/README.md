@@ -35,4 +35,11 @@ python evaluate.py
 
 ## Full Assignment
 
-See the course website for complete assignment instructions, deliverables, and submission requirements.
+---
+
+**USC ID:** 1798757647  
+**USC email:** wanshica@usc.edu
+
+**Note on Problem 1 Testing:**
+
+For the `solve` function in both `ValueIteration` and `Q_Iteration` classes, I modified the output to return 3 values instead of 2. The third output records the training history for plotting curves. As a result, there will be 2 test failures in `test_interfaces.py` due to this change.

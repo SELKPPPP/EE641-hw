@@ -1,0 +1,23 @@
+{
+    "performance": {
+        "mean_reward": 11.740000000000002,
+        "std_reward": 45.367525830708495,
+        "success_rate": 0.02,
+        "mean_steps": 50.0,
+        "std_steps": 0.0
+    },
+    "communication": {
+        "comm_A_mean": 0.6835839616954327,
+        "comm_A_std": 0.1500266960261669,
+        "comm_B_mean": 0.26861616129777394,
+        "comm_B_std": 0.09878326922607326,
+        "comm_correlation": 0.0447505031304313
+    },
+    "generalization": {
+        "mean_reward": -0.8000000000000014,
+        "std_reward": 12.59999999999999,
+        "success_rate": 0.0,
+        "mean_steps": 50.0,
+        "std_steps": 0.0
+    }
+}
